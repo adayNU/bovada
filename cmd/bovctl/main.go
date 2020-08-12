@@ -47,7 +47,7 @@ func main() {
 	case today:
 		opts.TodayOnly()
 	case tomorrow:
-		opts.TodayOnly()
+		opts.TomorrowOnly()
 	default:
 		// No-Op.
 	}

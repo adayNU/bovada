@@ -10,7 +10,10 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 )
+
+var now = time.Now
 
 // Client implements methods for interacting with the Bovada API.
 type Client struct {
@@ -55,15 +58,23 @@ func (q *queryOpts) UpcomingOnly(b bool) *queryOpts {
 
 // TodayOnly will limit the query to only events starting today.
 // If the start date parameter has already been set, it will overwrite it.
+// It will also clear the start time offset, as it is by definition today
+// so no filter is necessary there.
 func (q *queryOpts) TodayOnly() *queryOpts {
-	q.query.Set(startTimeKey, startTimeToday)
+	var t = minutesLeftInDay(now())
+	q.query.Del(startTimeOffsetKey)
+	q.query.Set(startTimeKey, strconv.Itoa(t))
+
 	return q
 }
 
 // TomorrowOnly will limit the query to only events starting tomorrow.
 // If the start date parameter has already been set, it will overwrite it.
 func (q *queryOpts) TomorrowOnly() *queryOpts {
-	q.query.Set(startTimeKey, startTimeTomorrow)
+	var t = minutesLeftInDay(now())
+	q.query.Set(startTimeOffsetKey, strconv.Itoa(t))
+	q.query.Set(startTimeKey, strconv.Itoa(t+minutesInDay))
+
 	return q
 }
 
@@ -109,4 +120,13 @@ func (c *Client) getEvents(path string, query url.Values) (*EventResponse, error
 	}
 
 	return e[0], nil
+}
+
+// minutesInDay is the number of minutes in a day.
+const minutesInDay = 60 * 24 // 1,440.
+
+// minutesLeftInDay returns the number of minutes remaining
+// in the day (rounded down) given time |t|.
+func minutesLeftInDay(t time.Time) int {
+	return (23-t.Hour())*60 + (60 - t.Minute())
 }

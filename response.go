@@ -12,10 +12,15 @@ const (
 
 	upcomingOnlyKey = "preMatchOnly"
 	langKey         = "lang"
-	startTimeKey    = "startTimeLimit"
 
-	startTimeToday    = "410"
-	startTimeTomorrow = "1847"
+	// Bovada uses minutes as their units for their time limiting parameters.
+
+	// startTimeKey represents the time (in minutes from now)
+	// which the event must start prior to.
+	startTimeKey = "startTimeLimit"
+	// startTimeOffsetKey represents the time (in minutes from now)
+	// which the event must start after.
+	startTimeOffsetKey = "startTimeOffset"
 )
 
 // path includes metadata about the returned events.

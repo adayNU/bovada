@@ -3,7 +3,9 @@ package bovada
 import (
 	"net/http"
 	"net/url"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/go-check/check"
 )
@@ -36,6 +38,16 @@ func (cs *clientSuite) TestNewClient(c *check.C) {
 }
 
 func (cs *clientSuite) TestQueryOpts(c *check.C) {
+	// Freeze time for test.
+	var d = time.Now()
+	now = func() time.Time {
+		return d
+	}
+
+	// Compute expected query param values.
+	var sEOD = strconv.Itoa(minutesLeftInDay(d))
+	var sEOT = strconv.Itoa(minutesLeftInDay(d) + minutesInDay)
+
 	var tcs = []struct {
 		name string
 		opts *queryOpts
@@ -53,15 +65,16 @@ func (cs *clientSuite) TestQueryOpts(c *check.C) {
 			opts: NewQueryOpts().TodayOnly(),
 			exp: url.Values{
 				langKey:      []string{"en"},
-				startTimeKey: []string{startTimeToday},
+				startTimeKey: []string{sEOD},
 			},
 		},
 		{
 			name: "Default opts + tomorrow.",
 			opts: NewQueryOpts().TomorrowOnly(),
 			exp: url.Values{
-				langKey:      []string{"en"},
-				startTimeKey: []string{startTimeTomorrow},
+				langKey:            []string{"en"},
+				startTimeKey:       []string{sEOT},
+				startTimeOffsetKey: []string{sEOD},
 			},
 		},
 		{
@@ -69,15 +82,16 @@ func (cs *clientSuite) TestQueryOpts(c *check.C) {
 			opts: NewQueryOpts().TomorrowOnly().TodayOnly(),
 			exp: url.Values{
 				langKey:      []string{"en"},
-				startTimeKey: []string{startTimeToday},
+				startTimeKey: []string{sEOD},
 			},
 		},
 		{
 			name: "Default opts + today + tomorrow (tomorrow should overwrite).",
 			opts: NewQueryOpts().TodayOnly().TomorrowOnly(),
 			exp: url.Values{
-				langKey:      []string{"en"},
-				startTimeKey: []string{startTimeTomorrow},
+				langKey:            []string{"en"},
+				startTimeKey:       []string{sEOT},
+				startTimeOffsetKey: []string{sEOD},
 			},
 		},
 		{
@@ -108,9 +122,10 @@ func (cs *clientSuite) TestQueryOpts(c *check.C) {
 			name: "Default opts + upcoming true + today + upcoming false + tomorrow (tomorrow + false should overwrite).",
 			opts: NewQueryOpts().UpcomingOnly(true).TodayOnly().UpcomingOnly(false).TomorrowOnly(),
 			exp: url.Values{
-				langKey:         []string{"en"},
-				upcomingOnlyKey: []string{"false"},
-				startTimeKey:    []string{startTimeTomorrow},
+				langKey:            []string{"en"},
+				upcomingOnlyKey:    []string{"false"},
+				startTimeKey:       []string{sEOT},
+				startTimeOffsetKey: []string{sEOD},
 			},
 		},
 	}
@@ -149,6 +164,41 @@ func (cs *clientSuite) TestGetEvents(c *check.C) {
 		var resp, err = cl.GetEvents(tc.path, tc.opts)
 		c.Check(resp, check.NotNil)
 		c.Check(err, check.IsNil)
+	}
+}
+
+func (cs *clientSuite) TestMinutesLeftInDay(c *check.C) {
+	var tcs = []struct {
+		name string
+		t    time.Time
+		exp  int
+	}{
+		{
+			name: "Hours no minutes.",
+			t:    time.Date(2020, time.August, 12, 1, 0, 0, 0, time.UTC),
+			exp:  22*60 + 60,
+		},
+		{
+			name: "Hours and minutes.",
+			t:    time.Date(2020, time.August, 12, 1, 1, 0, 0, time.UTC),
+			exp:  22*60 + 59,
+		},
+		{
+			name: "Hours, minutes, seconds, nanoseconds.",
+			t:    time.Date(2020, time.August, 12, 1, 1, 1, 1, time.UTC),
+			exp:  22*60 + 59,
+		},
+		{
+			name: "Hours, minutes, seconds, nanoseconds (afternoon).",
+			t:    time.Date(2020, time.August, 12, 13, 1, 1, 1, time.UTC),
+			exp:  10*60 + 59,
+		},
+	}
+
+	for _, tc := range tcs {
+		c.Log(tc.name)
+
+		c.Check(minutesLeftInDay(tc.t), check.Equals, tc.exp)
 	}
 }
 

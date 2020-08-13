@@ -12,6 +12,7 @@ const (
 
 	upcomingOnlyKey = "preMatchOnly"
 	langKey         = "lang"
+	gamesFilterKey  = "marketFilterId"
 
 	// Bovada uses minutes as their units for their time limiting parameters.
 

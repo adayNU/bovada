@@ -13,7 +13,13 @@ import (
 	"time"
 )
 
-var now = time.Now
+var (
+	now = time.Now
+
+	// ErrNoEvents means the query was a success, but returned
+	// no events.
+	ErrNoEvents = errors.New("no events returned")
+)
 
 // Client implements methods for interacting with the Bovada API.
 type Client struct {
@@ -46,6 +52,13 @@ func NewQueryOpts() *queryOpts {
 			langKey: []string{"en"},
 		},
 	}
+}
+
+// GamesOnly adds a filter to query for only events of
+// type GAMEEVENT.
+func (q *queryOpts) GamesOnly() *queryOpts {
+	q.query.Set(gamesFilterKey, "def")
+	return q
 }
 
 // Upcoming will limit the query to upcoming events only
@@ -117,6 +130,10 @@ func (c *Client) getEvents(path string, query url.Values) (*EventResponse, error
 	err = json.Unmarshal(body, &e)
 	if err != nil {
 		return nil, errors.New("error parsing response: " + err.Error())
+	}
+
+	if len(e) == 0 {
+		return &EventResponse{}, ErrNoEvents
 	}
 
 	return e[0], nil

@@ -6,6 +6,9 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sort"
+	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/adayNU/bovada"
@@ -53,6 +56,7 @@ func main() {
 	}
 
 	opts.UpcomingOnly(*upcoming)
+	opts.GamesOnly()
 
 	var c = bovada.NewClient(http.DefaultClient)
 	var r, err = c.GetEvents(leagueMap[*league], opts)
@@ -69,12 +73,26 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(r.Events), func(i, j int) { r.Events[i], r.Events[j] = r.Events[j], r.Events[i] })
 
+	var ev = r.Events[:*num]
+	sort.Slice(ev, func(i, j int) bool { return ev[i].StartTime < ev[j].StartTime })
+
+	var w = tabwriter.NewWriter(os.Stdout, 0, 0, 5, ' ', 0)
+	_, _ = fmt.Fprintln(w, strings.Join([]string{"Start Time", "Matchup", "Winner"}, "\t"))
+
 	for i, event := range r.Events {
 		if i == *num {
 			break
 		}
 
 		rand.Seed(time.Now().UnixNano())
-		fmt.Println(event.Competitors[rand.Intn(2)].Name)
+		var t = time.Unix(event.StartTime/1000, 0)
+
+		_, _ = fmt.Fprintln(w, strings.Join([]string{
+			t.Format(time.RFC822),
+			event.Description,
+			event.Competitors[rand.Intn(2)].Name,
+		}, "\t"))
 	}
+
+	_ = w.Flush()
 }

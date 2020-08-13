@@ -79,16 +79,10 @@ func main() {
 	var w = tabwriter.NewWriter(os.Stdout, 0, 0, 5, ' ', 0)
 	_, _ = fmt.Fprintln(w, strings.Join([]string{"Start Time", "Matchup", "Winner"}, "\t"))
 
-	for i, event := range r.Events {
-		if i == *num {
-			break
-		}
-
+	for _, event := range ev {
 		rand.Seed(time.Now().UnixNano())
-		var t = time.Unix(event.StartTime/1000, 0)
-
 		_, _ = fmt.Fprintln(w, strings.Join([]string{
-			t.Format(time.RFC822),
+			time.Unix(event.StartTime/1000, 0).Format(time.RFC822),
 			event.Description,
 			event.Competitors[rand.Intn(2)].Name,
 		}, "\t"))

@@ -9,6 +9,10 @@ const (
 	NBAPath = "services/sports/event/coupon/events/A/description/basketball/nba"
 	// NHLPath is the path for the NHL events endpoint.
 	NHLPath = "services/sports/event/coupon/events/A/description/hockey/nhl"
+	// NFLPath is the path for the NFL events endpoint.
+	NFLPath = "services/sports/event/coupon/events/A/description/football/nfl"
+	// CFBPath is the path for the NCAA College Football events endpoint.
+	CFBPath = "services/sports/event/coupon/events/A/description/football/college-football"
 
 	upcomingOnlyKey = "preMatchOnly"
 	langKey         = "lang"

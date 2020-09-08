@@ -18,13 +18,15 @@ const (
 	mlb = "mlb"
 	nba = "nba"
 	nhl = "nhl"
+	nfl = "nfl"
+	cfb = "cfb"
 
 	today    = "today"
 	tomorrow = "tomorrow"
 )
 
 var (
-	league   = flag.String("l", "mlb", `Specify which league to query events for ("mlb", "nba"", "nhl").`)
+	league   = flag.String("l", "mlb", `Specify which league to query events for ("mlb", "nba", "nhl", "nfl", "cfb").`)
 	num      = flag.Int("n", 1, "Number of events to chose a bet for.")
 	date     = flag.String("d", "all", `Limits events to a certain day ("today", "tomorrow", "all"')`)
 	upcoming = flag.Bool("u", false, "Upcoming events only")
@@ -34,6 +36,8 @@ var leagueMap = map[string]string{
 	mlb: bovada.MLBPath,
 	nba: bovada.NBAPath,
 	nhl: bovada.NHLPath,
+	nfl: bovada.NFLPath,
+	cfb: bovada.CFBPath,
 }
 
 func main() {

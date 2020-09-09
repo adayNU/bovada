@@ -47,6 +47,7 @@ func (cs *clientSuite) TestQueryOpts(c *check.C) {
 	// Compute expected query param values.
 	var sEOD = strconv.Itoa(minutesLeftInDay(d))
 	var sEOT = strconv.Itoa(minutesLeftInDay(d) + minutesInDay)
+	var sEOW = strconv.Itoa(minutesLeftInWeek(d))
 
 	var tcs = []struct {
 		name string
@@ -75,6 +76,14 @@ func (cs *clientSuite) TestQueryOpts(c *check.C) {
 				langKey:            []string{"en"},
 				startTimeKey:       []string{sEOT},
 				startTimeOffsetKey: []string{sEOD},
+			},
+		},
+		{
+			name: "Default opts + this week.",
+			opts: NewQueryOpts().ThisWeek(),
+			exp: url.Values{
+				langKey:      []string{"en"},
+				startTimeKey: []string{sEOW},
 			},
 		},
 		{
@@ -126,6 +135,15 @@ func (cs *clientSuite) TestQueryOpts(c *check.C) {
 				upcomingOnlyKey:    []string{"false"},
 				startTimeKey:       []string{sEOT},
 				startTimeOffsetKey: []string{sEOD},
+			},
+		},
+		{
+			name: "Default opts + upcoming true + today + upcoming false + this week (this week + false should overwrite).",
+			opts: NewQueryOpts().UpcomingOnly(true).TodayOnly().UpcomingOnly(false).ThisWeek(),
+			exp: url.Values{
+				langKey:            []string{"en"},
+				upcomingOnlyKey:    []string{"false"},
+				startTimeKey:       []string{sEOW},
 			},
 		},
 	}

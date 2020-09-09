@@ -91,6 +91,15 @@ func (q *queryOpts) TomorrowOnly() *queryOpts {
 	return q
 }
 
+// ThisWeek will return all events through the upcoming Sunday, inclusive.
+func (q *queryOpts) ThisWeek() *queryOpts {
+	var t = minutesLeftInWeek(now())
+	q.query.Del(startTimeOffsetKey)
+	q.query.Set(startTimeKey, strconv.Itoa(t))
+
+	return q
+}
+
 // GetEvents queries the API for the given path and with the specified options.
 func (c *Client) GetEvents(path string, opts *queryOpts) (*EventResponse, error) {
 	if opts == nil {
@@ -146,4 +155,14 @@ const minutesInDay = 60 * 24 // 1,440.
 // in the day (rounded down) given time |t|.
 func minutesLeftInDay(t time.Time) int {
 	return (23-t.Hour())*60 + (60 - t.Minute())
+}
+
+// minutesLeftInWeek returns the number of minutes remaining
+// in the week ending on Sunday (rounded down) given time |t|.
+func minutesLeftInWeek(t time.Time) int {
+	if t.Weekday() == 0 {
+		return minutesLeftInDay(t)
+	}
+
+	return (7-int(t.Weekday()))*minutesInDay + minutesLeftInDay(t)
 }

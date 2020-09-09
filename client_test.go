@@ -169,36 +169,42 @@ func (cs *clientSuite) TestGetEvents(c *check.C) {
 
 func (cs *clientSuite) TestMinutesLeftInDay(c *check.C) {
 	var tcs = []struct {
-		name string
-		t    time.Time
-		exp  int
+		name    string
+		t       time.Time
+		expDay  int
+		expWeek int
 	}{
 		{
-			name: "Hours no minutes.",
-			t:    time.Date(2020, time.August, 12, 1, 0, 0, 0, time.UTC),
-			exp:  22*60 + 60,
+			name:    "Hours no minutes, Wednesday.",
+			t:       time.Date(2020, time.August, 12, 1, 0, 0, 0, time.UTC),
+			expDay:  22*60 + 60,
+			expWeek: (22*60 + 60) + (4 * 24 * 60),
 		},
 		{
-			name: "Hours and minutes.",
-			t:    time.Date(2020, time.August, 12, 1, 1, 0, 0, time.UTC),
-			exp:  22*60 + 59,
+			name:    "Hours and minutes, Thursday.",
+			t:       time.Date(2020, time.August, 13, 1, 1, 0, 0, time.UTC),
+			expDay:  22*60 + 59,
+			expWeek: (22*60 + 59) + (3 * 24 * 60),
 		},
 		{
-			name: "Hours, minutes, seconds, nanoseconds.",
-			t:    time.Date(2020, time.August, 12, 1, 1, 1, 1, time.UTC),
-			exp:  22*60 + 59,
+			name:    "Hours, minutes, seconds, nanoseconds, Sunday.",
+			t:       time.Date(2020, time.August, 16, 1, 1, 1, 1, time.UTC),
+			expDay:  22*60 + 59,
+			expWeek: 22*60 + 59,
 		},
 		{
-			name: "Hours, minutes, seconds, nanoseconds (afternoon).",
-			t:    time.Date(2020, time.August, 12, 13, 1, 1, 1, time.UTC),
-			exp:  10*60 + 59,
+			name:    "Hours, minutes, seconds, nanoseconds (afternoon), Monday.",
+			t:       time.Date(2020, time.August, 17, 13, 1, 1, 1, time.UTC),
+			expDay:  10*60 + 59,
+			expWeek: 10*60 + 59 + (6 * 24 * 60),
 		},
 	}
 
 	for _, tc := range tcs {
 		c.Log(tc.name)
 
-		c.Check(minutesLeftInDay(tc.t), check.Equals, tc.exp)
+		c.Check(minutesLeftInDay(tc.t), check.Equals, tc.expDay)
+		c.Check(minutesLeftInWeek(tc.t), check.Equals, tc.expWeek)
 	}
 }
 

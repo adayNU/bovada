@@ -23,6 +23,7 @@ const (
 
 	today    = "today"
 	tomorrow = "tomorrow"
+	week = "week"
 )
 
 var (
@@ -55,6 +56,8 @@ func main() {
 		opts.TodayOnly()
 	case tomorrow:
 		opts.TomorrowOnly()
+	case week:
+		opts.ThisWeek()
 	default:
 		// No-Op.
 	}

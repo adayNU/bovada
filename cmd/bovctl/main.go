@@ -23,7 +23,7 @@ const (
 
 	today    = "today"
 	tomorrow = "tomorrow"
-	week = "week"
+	week     = "week"
 )
 
 var (
